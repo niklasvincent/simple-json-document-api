@@ -1,7 +1,11 @@
 var util = require('util');
 var fs = require("fs");
 var path = require('path');
+var storage = require('node-persist');
 var express = require('express');
+
+// Set up database
+storage.initSync();
 
 var app = express();
 
@@ -17,10 +21,6 @@ function filterIdentifier(identifier) {
 	return identifier.replace(/[^a-z0-9]/gi,'');
 }
 
-function buildFileName(identifier) {
-	return path.join(__dirname, "data", identifier + ".json");
-}
-
 function isValidJSON(jsonString) {
 	try {
 	    JSON.parse(jsonString);
@@ -32,29 +32,26 @@ function isValidJSON(jsonString) {
 
 app.get('/content/:identifier', function (req, res) {
 	var identifier = filterIdentifier(req.params.identifier);
-	var filename = buildFileName(identifier);
-	if (fs.existsSync(filename)) { 
-		try {
-				var data = require(filename);
+	try {
+			var data = storage.getItem(identifier);
+			if (!data) {
+				console.log("No such document: " + identifier);
+				res.status(404).send("Document not found");
+			} else {
 				res.setHeader('Content-Type', 'application/json');
 				res.status(200).send(data);
-			} catch (err) {
-				res.status(500).send("An error occured");
-				console.log("Error reading " + filename + ": " + err);
 			}
-	} else {
-		console.log("No such document: " + filename);
-		res.status(404).send("Document not found");
-	}
+		} catch (err) {
+			res.status(500).send("An error occured");
+			console.log("Error reading " + filename + ": " + err);
+		}
 });
 
 app.post('/content/:identifier', function (req, res) {
 	var identifier = filterIdentifier(req.params.identifier);
-	var filename = buildFileName(identifier);
 	var body = req.body;
 	if (isValidJSON(body)) {
-		fs.writeFile(filename, body, "utf8");
-		console.log("Wrote data to " + filename);
+		storage.setItem(identifier, body);
 		res.status(204).send("");
 	} else {
 		res.status(400).send("Bad JSON");

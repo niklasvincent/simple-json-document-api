@@ -10,5 +10,7 @@ pids
 
 # Optional npm cache directory
 .npm
-
 node_modules
+
+# Application data
+persist
