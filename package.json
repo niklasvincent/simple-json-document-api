@@ -1,0 +1,16 @@
+{
+  "name": "simple-json-document-api",
+  "version": "0.0.1",
+  "private": "true",
+  "description": "",
+  "start": "node server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.12.3",
+    "concat-stream": "1.5.1"
+  }
+}
